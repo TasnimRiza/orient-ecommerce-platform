@@ -29,6 +29,5 @@ databases:
   - name: orient-postgres
     region: singapore
     plan: free
-    diskSizeGB: 1
     postgresMajorVersion: "18"
     ipAllowList: []
