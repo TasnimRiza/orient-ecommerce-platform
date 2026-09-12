@@ -1,7 +1,7 @@
 # Orient Computer E-Commerce Platform : Frontend Architecture and Implementation
 
 [![Python Version](https://img.shields.io/badge/Python-3.10%2B-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
-[![Django Version](https://img.shields.io/badge/Django-4.2%20LTS-092e20.svg?logo=django&logoColor=white)](https://www.djangoproject.com/)
+[![Django Version](https://img.shields.io/badge/Django-5.2%20LTS-092e20.svg?logo=django&logoColor=white)](https://www.djangoproject.com/)
 [![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-7952b3.svg?logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
 
@@ -40,7 +40,7 @@ An enterprise-grade, full-stack Django E-Commerce and Retail Management System d
 
 | Layer | Technologies |
 |---|---|
-| **Backend Framework** | Python 3.10+, Django 4.2 LTS (MVT Architecture) |
+| **Backend Framework** | Python 3.10+, Django 5.2 LTS (MVT Architecture) |
 | **Database** | SQLite (Default for zero-config local development) / PostgreSQL Ready |
 | **Frontend & UI** | Django Templates, Bootstrap 5.3, Bootstrap Icons, Vanilla JS (ES6+) |
 | **Data Visualization** | Chart.js 4.4 (Revenue analytics, order status distribution) |
@@ -248,7 +248,6 @@ Copy `.env.example` to `.env` and adjust the variables if necessary:
 
 #### 5. Apply Database Migrations
 ```bash
-python manage.py makemigrations accounts catalog orders service
 python manage.py migrate
 ```
 
@@ -268,7 +267,7 @@ Navigate to **`http://127.0.0.1:8000/`** in your browser to view the live platfo
 
 ## 🔐 Default User Accounts & Credentials
 
-The seed command creates predefined accounts for administrative testing and customer workflows:
+The seed command creates the following accounts only in local development (`DEBUG=True`). Production requires the secure administrator password entered during Blueprint creation and does not create the demo customer:
 
 | Role | Username | Password | Email | Access Scope |
 |---|---|---|---|---|
@@ -323,6 +322,48 @@ To run tests across the entire project:
 ```bash
 python manage.py test
 ```
+
+---
+
+## Production Deployment on Render
+
+This repository includes a production Blueprint in `render.yaml`. It provisions:
+
+- A Django web service in Render's Singapore region
+- A private managed PostgreSQL database
+- A persistent 1 GB disk for product/category image uploads
+- Automatic HTTPS, static-file collection, migrations, health checks, and deploys from `main`
+- One-time catalog, coupon, and branch seeding
+
+### Deploy
+
+1. Commit these files and push the repository to GitHub:
+
+   ```bash
+   git add .
+   git commit -m "Prepare production deployment"
+   git push origin main
+   ```
+
+2. Sign in to [Render](https://dashboard.render.com/), select **New > Blueprint**, and connect this repository.
+3. Keep the detected `render.yaml` path and select **Apply**.
+4. When prompted for `DJANGO_SUPERUSER_PASSWORD`, enter a unique, strong password. Render generates `SECRET_KEY` and the PostgreSQL credentials automatically.
+5. Wait for the database and web service to report **Live**, then open its generated `.onrender.com` address.
+
+Production administration is available at `/django-admin/` and the custom back office is at `/admin-panel/`. Sign in as `admin` with the password entered during Blueprint creation.
+
+### Custom domain
+
+After adding a domain in Render, add these environment variables to the web service and redeploy:
+
+```env
+ALLOWED_HOSTS=shop.example.com,www.shop.example.com
+CSRF_TRUSTED_ORIGINS=https://shop.example.com,https://www.shop.example.com
+```
+
+### Important cost note
+
+The Blueprint intentionally uses paid persistent resources because an e-commerce database and uploaded product images must survive restarts and redeployments. Removing the disk or changing the database to a temporary/free plan can cause uploaded files or database data to expire.
 
 ---
 

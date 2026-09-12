@@ -1,4 +1,6 @@
+import os
 from django.core.management.base import BaseCommand
+from django.conf import settings
 from django.utils import timezone
 from datetime import timedelta
 from decimal import Decimal
@@ -16,10 +18,16 @@ class Command(BaseCommand):
         self.stdout.write(self.style.NOTICE('Starting Orient Computers database seeding...'))
 
         # 1. Create Users
+        admin_username = os.environ.get('DJANGO_SUPERUSER_USERNAME', 'admin')
+        admin_email = os.environ.get(
+            'DJANGO_SUPERUSER_EMAIL',
+            'admin@orientcomputers.com.bd',
+        )
+        admin_password = os.environ.get('DJANGO_SUPERUSER_PASSWORD')
         admin_user, created = User.objects.get_or_create(
-            username='admin',
+            username=admin_username,
             defaults={
-                'email': 'admin@orientcomputers.com.bd',
+                'email': admin_email,
                 'first_name': 'Orient',
                 'last_name': 'Administrator',
                 'role': 'admin',
@@ -32,28 +40,39 @@ class Command(BaseCommand):
             }
         )
         if created:
-            admin_user.set_password('admin123')
+            if admin_password:
+                admin_user.set_password(admin_password)
+            elif settings.DEBUG:
+                admin_user.set_password('admin123')
+            else:
+                admin_user.set_unusable_password()
             admin_user.save()
-            self.stdout.write(self.style.SUCCESS('Admin user created (admin / admin123)'))
+            self.stdout.write(self.style.SUCCESS(f'Admin user created ({admin_username})'))
 
-        demo_customer, created = User.objects.get_or_create(
-            username='fahim',
-            defaults={
-                'email': 'fahim@orient.bd',
-                'first_name': 'Fahim',
-                'last_name': 'Shahriar',
-                'role': 'customer',
-                'phone': '+880 1711-123456',
-                'address_division': 'Dhaka',
-                'address_district': 'Dhaka',
-                'address_street': 'House 14, Road 7, Dhanmondi',
-                'address_postal': '1205',
-            }
-        )
-        if created:
-            demo_customer.set_password('customer123')
-            demo_customer.save()
-            self.stdout.write(self.style.SUCCESS('Demo customer created (fahim / customer123)'))
+        demo_customer = None
+        create_demo_users = os.environ.get(
+            'CREATE_DEMO_USERS',
+            str(settings.DEBUG),
+        ).lower() in {'1', 'true', 'yes', 'on'}
+        if create_demo_users:
+            demo_customer, created = User.objects.get_or_create(
+                username='fahim',
+                defaults={
+                    'email': 'fahim@orient.bd',
+                    'first_name': 'Fahim',
+                    'last_name': 'Shahriar',
+                    'role': 'customer',
+                    'phone': '+880 1711-123456',
+                    'address_division': 'Dhaka',
+                    'address_district': 'Dhaka',
+                    'address_street': 'House 14, Road 7, Dhanmondi',
+                    'address_postal': '1205',
+                }
+            )
+            if created:
+                demo_customer.set_password('customer123')
+                demo_customer.save()
+                self.stdout.write(self.style.SUCCESS('Demo customer created for local development.'))
 
         # 2. Create Orient Categories
         categories_data = [
@@ -1124,4 +1143,3 @@ class Command(BaseCommand):
             )
 
         self.stdout.write(self.style.SUCCESS('Orient Computers database successfully initialized and seeded!'))
-

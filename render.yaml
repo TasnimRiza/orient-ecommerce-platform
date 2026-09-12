@@ -1,0 +1,41 @@
+services:
+  - type: web
+    name: orient-ecommerce
+    runtime: python
+    region: singapore
+    plan: 0.5c-512mb
+    buildCommand: bash build.sh
+    preDeployCommand: python manage.py migrate
+    initialDeployHook: python manage.py seed_data
+    startCommand: gunicorn orient.wsgi:application
+    healthCheckPath: /health/
+    autoDeployTrigger: commit
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: orient-postgres
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: DJANGO_SUPERUSER_USERNAME
+        value: admin
+      - key: DJANGO_SUPERUSER_EMAIL
+        value: admin@orientcomputers.com.bd
+      - key: DJANGO_SUPERUSER_PASSWORD
+        sync: false
+      - key: MEDIA_ROOT
+        value: /opt/render/project/src/media
+    disk:
+      name: orient-media
+      mountPath: /opt/render/project/src/media
+      sizeGB: 1
+
+databases:
+  - name: orient-postgres
+    region: singapore
+    plan: 0.1c-256mb
+    diskSizeGB: 1
+    postgresMajorVersion: "18"
+    ipAllowList: []

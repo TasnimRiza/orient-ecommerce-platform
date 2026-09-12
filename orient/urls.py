@@ -2,10 +2,17 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import JsonResponse
 
 from apps.catalog import views as catalog_views
 
+
+def health_check(request):
+    """Lightweight endpoint used by the hosting platform."""
+    return JsonResponse({'status': 'ok'})
+
 urlpatterns = [
+    path('health/', health_check, name='health-check'),
     # Built-in Django Admin (at /django-admin/ to avoid conflicting with custom /admin-panel/)
     path('django-admin/', admin.site.urls),
     
