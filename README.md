@@ -325,13 +325,12 @@ python manage.py test
 
 ---
 
-## Production Deployment on Render
+## Free Deployment on Render
 
-This repository includes a production Blueprint in `render.yaml`. It provisions:
+This repository includes a deployment Blueprint in `render.yaml`. It provisions:
 
 - A Django web service in Render's Singapore region
 - A private managed PostgreSQL database
-- A persistent 1 GB disk for product/category image uploads
 - Automatic HTTPS, static-file collection, migrations, health checks, and deploys from `main`
 - One-time catalog, coupon, and branch seeding
 
@@ -361,9 +360,9 @@ ALLOWED_HOSTS=shop.example.com,www.shop.example.com
 CSRF_TRUSTED_ORIGINS=https://shop.example.com,https://www.shop.example.com
 ```
 
-### Important cost note
+### Free-tier limitations
 
-The Blueprint intentionally uses paid persistent resources because an e-commerce database and uploaded product images must survive restarts and redeployments. Removing the disk or changing the database to a temporary/free plan can cause uploaded files or database data to expire.
+The included Blueprint uses Render's free web-service and PostgreSQL plans and does not require a payment card. It is suitable for a demo, portfolio, or short-term test deployment. Free services can sleep when idle, the free PostgreSQL database expires after 30 days, and files uploaded through the administration panel are not persistent. The seeded product images use online URLs and continue to display. For a permanent store, move uploads to an object-storage provider and use a persistent database.
 
 ---
 

@@ -3,9 +3,8 @@ services:
     name: orient-ecommerce
     runtime: python
     region: singapore
-    plan: 0.5c-512mb
+    plan: free
     buildCommand: bash build.sh
-    preDeployCommand: python manage.py migrate
     initialDeployHook: python manage.py seed_data
     startCommand: gunicorn orient.wsgi:application
     healthCheckPath: /health/
@@ -25,17 +24,11 @@ services:
         value: admin@orientcomputers.com.bd
       - key: DJANGO_SUPERUSER_PASSWORD
         sync: false
-      - key: MEDIA_ROOT
-        value: /opt/render/project/src/media
-    disk:
-      name: orient-media
-      mountPath: /opt/render/project/src/media
-      sizeGB: 1
 
 databases:
   - name: orient-postgres
     region: singapore
-    plan: 0.1c-256mb
+    plan: free
     diskSizeGB: 1
     postgresMajorVersion: "18"
     ipAllowList: []
